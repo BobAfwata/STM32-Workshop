@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define BUTTON_EXTI_IRQn EXTI4_15_IRQn
 #define BLUE_LED_Pin GPIO_PIN_6
 #define BLUE_LED_GPIO_Port GPIOA
+#define GREEN_LED_Pin GPIO_PIN_7
+#define GREEN_LED_GPIO_Port GPIOA
 #define LED_PIN_Pin GPIO_PIN_1
 #define LED_PIN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -43,7 +44,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
+unsigned long int prev_time = 0;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -89,9 +90,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
+
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -124,6 +128,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the CPU, AHB and APB busses clocks 
   */
@@ -150,6 +155,12 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -157,10 +168,11 @@ void SystemClock_Config(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin  == BUTTON_Pin){
-		if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin)==0)
+		if((HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == 0) && (HAL_GetTick() - prev_time > 500))
 
 			HAL_GPIO_TogglePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin);
 
+		    prev_time = HAL_GetTick();
 
 				/*	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin,1);
 				else
@@ -170,6 +182,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		//HAL_Delay(50);
 	}
 }
+
+
+void  HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	        HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin,1);
+            uart_put((char *)"Led is On \r\n ");
+            HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin,0);
+            uart_put((char *)"Led is Off \r\n ");
+}
+
+
+
 /* USER CODE END 4 */
 
 /**
